@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/skeleton'
 
 type FormData = {
   email: string
@@ -59,12 +60,16 @@ const validationRules = {
   }
 }
 
+type LoadingState = 'idle' | 'email' | 'github' | 'submitting'
+
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [loadingState, setLoadingState] = useState<LoadingState>('idle')
   const [error, setError] = useState<string | null>(null)
+  
+  const isLoading = loadingState !== 'idle'
 
   const {
     register,
@@ -80,7 +85,7 @@ export function LoginForm({
   })
 
   const onSubmit = async (data: FormData) => {
-    setIsLoading(true)
+    setLoadingState('email')
     setError(null)
 
     try {
@@ -96,12 +101,12 @@ export function LoginForm({
     } catch (_err) {
       setError('An unexpected error occurred. Please check your connection and try again.')
     } finally {
-      setIsLoading(false)
+      setLoadingState('idle')
     }
   }
 
   const handleGitHubSignIn = async () => {
-    setIsLoading(true)
+    setLoadingState('github')
     setError(null)
 
     try {
@@ -112,11 +117,11 @@ export function LoginForm({
       if (isAuthError(result)) {
         const errorMessage = AUTH_ERROR_HANDLERS.social(result.error)
         setError(errorMessage)
-        setIsLoading(false)
+        setLoadingState('idle')
       }
     } catch (_err) {
       setError('Unable to connect to GitHub. Please check your connection and try again.')
-      setIsLoading(false)
+      setLoadingState('idle')
     }
   }
 
@@ -143,22 +148,27 @@ export function LoginForm({
                   onClick={handleGitHubSignIn}
                   disabled={isLoading}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <title>Login with GitHub</title>
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-                  </svg>
-                  {isLoading ? 'Signing in...' : 'Login with Github'}
+                  {loadingState === 'github' ? (
+                    <Spinner size="sm" className="mr-2" />
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="mr-2"
+                    >
+                      <title>Login with GitHub</title>
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                      <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+                    </svg>
+                  )}
+                  {loadingState === 'github' ? 'Connecting to GitHub...' : 'Login with GitHub'}
                 </Button>
               </div>
               <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -177,7 +187,8 @@ export function LoginForm({
                     className={cn(
                       errors.email && touchedFields.email
                         ? 'border-red-500 focus:border-red-500'
-                        : ''
+                        : '',
+                      isLoading && 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-60'
                     )}
                     {...register('email', validationRules.email)}
                   />
@@ -202,7 +213,8 @@ export function LoginForm({
                     className={cn(
                       errors.password && touchedFields.password
                         ? 'border-red-500 focus:border-red-500'
-                        : ''
+                        : '',
+                      isLoading && 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-60'
                     )}
                     {...register('password', validationRules.password)}
                   />
@@ -215,7 +227,8 @@ export function LoginForm({
                   className="w-full" 
                   disabled={isLoading || !isValid}
                 >
-                  {isLoading ? 'Signing in...' : 'Login'}
+                  {loadingState === 'email' && <Spinner size="sm" className="mr-2" />}
+                  {loadingState === 'email' ? 'Signing in...' : 'Sign in'}
                 </Button>
               </div>
               <div className="text-center text-sm">
