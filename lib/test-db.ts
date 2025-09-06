@@ -38,14 +38,16 @@ export async function recreateTestDatabase() {
     // Re-parse URL at runtime in case environment was loaded after module initialization
     const currentDbUrl = new URL(process.env.POSTGRES_URL!)
     const currentTestDbName = currentDbUrl.pathname.slice(1)
-    
+
     console.log(`Database URL: ${process.env.POSTGRES_URL}`)
     console.log(`Current test DB name: ${currentTestDbName}`)
-    
+
     if (!currentTestDbName.includes('_test')) {
-      throw new Error(`Expected test database name to contain '_test', got: ${currentTestDbName}`)
+      throw new Error(
+        `Expected test database name to contain '_test', got: ${currentTestDbName}`
+      )
     }
-    
+
     // Drop the test database if it exists
     const admin = getAdminConnection()
     await admin.unsafe(`DROP DATABASE IF EXISTS "${currentTestDbName}"`)
@@ -57,7 +59,6 @@ export async function recreateTestDatabase() {
 
     // Run migrations on the new test database
     await runTestMigrations()
-    
   } catch (error) {
     console.error('❌ Failed to recreate test database:', error)
     throw error
@@ -66,9 +67,12 @@ export async function recreateTestDatabase() {
 
 export async function runTestMigrations() {
   try {
-    const migrationPath = join(process.cwd(), 'migrations/001_better_auth_tables.sql')
+    const migrationPath = join(
+      process.cwd(),
+      'migrations/001_better_auth_tables.sql'
+    )
     const migration = readFileSync(migrationPath, 'utf8')
-    
+
     const testConn = getTestConnection()
     await testConn.unsafe(migration)
     console.log('✅ Test database migrations completed successfully')

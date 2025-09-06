@@ -7,7 +7,7 @@ import { join } from 'node:path'
 try {
   const envTestPath = join(process.cwd(), '.env.test')
   const envContent = readFileSync(envTestPath, 'utf8')
-  
+
   // Parse .env.test file
   envContent.split('\n').forEach(line => {
     if (line.trim() && !line.startsWith('#')) {

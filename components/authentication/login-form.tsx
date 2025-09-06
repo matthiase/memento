@@ -74,9 +74,9 @@ export function LoginForm({
           <form onSubmit={handleEmailSignIn}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
+                <Button
+                  variant="outline"
+                  className="w-full"
                   type="button"
                   onClick={handleGitHubSignIn}
                   disabled={isLoading}
@@ -112,7 +112,7 @@ export function LoginForm({
                     type="email"
                     placeholder="m@example.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     disabled={isLoading}
                     required
                   />
@@ -127,13 +127,13 @@ export function LoginForm({
                       Forgot your password?
                     </a>
                   </div>
-                  <Input 
-                    id="password" 
-                    type="password" 
+                  <Input
+                    id="password"
+                    type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     disabled={isLoading}
-                    required 
+                    required
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>

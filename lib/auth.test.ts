@@ -18,18 +18,23 @@ describe('Better Auth Configuration', () => {
 
   test('should use test database URL', () => {
     expect(process.env.POSTGRES_URL).toContain('_test')
-    expect(process.env.POSTGRES_URL).toBe('postgres://memento@localhost/memento_test?sslmode=disable')
+    expect(process.env.POSTGRES_URL).toBe(
+      'postgres://memento@localhost/memento_test?sslmode=disable'
+    )
   })
 
   test('should have correct base URL configuration', () => {
     expect(process.env.BETTER_AUTH_URL).toBe('http://localhost:3000')
-    expect(process.env.NEXT_PUBLIC_BETTER_AUTH_URL).toBe('http://localhost:3000')
+    expect(process.env.NEXT_PUBLIC_BETTER_AUTH_URL).toBe(
+      'http://localhost:3000'
+    )
   })
 
   test('should handle GitHub social provider conditionally', () => {
     // When no GitHub credentials are provided, should not error
-    const hasGithubCreds = process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
-    
+    const hasGithubCreds =
+      process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
+
     if (hasGithubCreds) {
       expect(process.env.GITHUB_CLIENT_ID).toBeTruthy()
       expect(process.env.GITHUB_CLIENT_SECRET).toBeTruthy()
@@ -44,9 +49,11 @@ describe('Better Auth Configuration', () => {
     expect(process.env.BETTER_AUTH_URL).toBe('http://localhost:3000')
     expect(process.env.BETTER_AUTH_SECRET).toBeDefined()
     expect(process.env.BETTER_AUTH_SECRET).not.toBe('')
-    
+
     // Test that the test database URL is being used
-    expect(process.env.POSTGRES_URL).toBe('postgres://memento@localhost/memento_test?sslmode=disable')
+    expect(process.env.POSTGRES_URL).toBe(
+      'postgres://memento@localhost/memento_test?sslmode=disable'
+    )
   })
 
   test('should have proper mock data structures', () => {
@@ -88,7 +95,7 @@ describe('Better Auth Configuration', () => {
     expect(mockSession).toHaveProperty('user')
     expect(mockSession.session).toHaveProperty('id')
     expect(mockSession.user).toHaveProperty('email')
-    
+
     expect(mockUser).toHaveProperty('id')
     expect(mockUser).toHaveProperty('email')
     expect(mockUser).toHaveProperty('emailVerified')
