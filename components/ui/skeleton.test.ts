@@ -5,13 +5,13 @@ import { describe, test, expect } from 'bun:test'
 
 describe('Skeleton Components', () => {
   test('should export all skeleton components', async () => {
-    const { 
-      Skeleton, 
-      InputSkeleton, 
-      ButtonSkeleton, 
-      TextSkeleton, 
-      LabelSkeleton, 
-      Spinner 
+    const {
+      Skeleton,
+      InputSkeleton,
+      ButtonSkeleton,
+      TextSkeleton,
+      LabelSkeleton,
+      Spinner
     } = await import('./skeleton')
 
     expect(typeof Skeleton).toBe('function')
@@ -23,13 +23,13 @@ describe('Skeleton Components', () => {
   })
 
   test('skeleton components should be React components', async () => {
-    const { 
-      Skeleton, 
-      InputSkeleton, 
-      ButtonSkeleton, 
-      TextSkeleton, 
-      LabelSkeleton, 
-      Spinner 
+    const {
+      Skeleton,
+      InputSkeleton,
+      ButtonSkeleton,
+      TextSkeleton,
+      LabelSkeleton,
+      Spinner
     } = await import('./skeleton')
 
     // Verify they have displayName or are function components
@@ -42,8 +42,10 @@ describe('Skeleton Components', () => {
   })
 
   test('should export LoginFormSkeleton component', async () => {
-    const { LoginFormSkeleton } = await import('../authentication/login-form-skeleton')
-    
+    const { LoginFormSkeleton } = await import(
+      '../authentication/login-form-skeleton'
+    )
+
     expect(typeof LoginFormSkeleton).toBe('function')
     expect(LoginFormSkeleton.name).toBe('LoginFormSkeleton')
   })
@@ -52,9 +54,9 @@ describe('Skeleton Components', () => {
 describe('Loading State Types', () => {
   test('should define proper loading state types', () => {
     type LoadingState = 'idle' | 'email' | 'github' | 'submitting'
-    
+
     const states: LoadingState[] = ['idle', 'email', 'github', 'submitting']
-    
+
     expect(states).toContain('idle')
     expect(states).toContain('email')
     expect(states).toContain('github')

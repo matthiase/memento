@@ -1,13 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { 
-  signIn,
-  type AuthResponse, 
-  isAuthError, 
-  AUTH_ERROR_HANDLERS 
-} from '@/lib/auth-client'
+import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -51,30 +45,41 @@ const validationRules = {
     },
     validate: {
       hasLowercase: (value: string) =>
-        /(?=.*[a-z])/.test(value) || 'Password must contain at least one lowercase letter',
+        /(?=.*[a-z])/.test(value) ||
+        'Password must contain at least one lowercase letter',
       hasUppercase: (value: string) =>
-        /(?=.*[A-Z])/.test(value) || 'Password must contain at least one uppercase letter',
+        /(?=.*[A-Z])/.test(value) ||
+        'Password must contain at least one uppercase letter',
       hasNumber: (value: string) =>
         /(?=.*\d)/.test(value) || 'Password must contain at least one number'
     }
   }
 }
 
-type LoadingState = 'idle' | 'email' | 'github' | 'submitting'
-
+/**
+ * Login form component with email/password and social authentication.
+ * Uses the useAuth hook for authentication logic and state management.
+ */
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const [loadingState, setLoadingState] = useState<LoadingState>('idle')
-  const [error, setError] = useState<string | null>(null)
-  
-  const isLoading = loadingState !== 'idle'
+  const { loadingState, error, isLoading, signInWithEmail, signInWithSocial } =
+    useAuth({
+      onSuccess: data => {
+        // Handle successful authentication
+        console.log('Authentication successful:', data)
+      },
+      onError: error => {
+        // Error handling is managed by the hook
+        console.error('Authentication error:', error)
+      }
+    })
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, touchedFields },
+    formState: { errors, isValid, touchedFields }
   } = useForm<FormData>({
     mode: 'onBlur',
     reValidateMode: 'onChange',
@@ -84,45 +89,18 @@ export function LoginForm({
     }
   })
 
+  /**
+   * Handles form submission for email/password authentication.
+   */
   const onSubmit = async (data: FormData) => {
-    setLoadingState('email')
-    setError(null)
-
-    try {
-      const result = await signIn.email({
-        email: data.email,
-        password: data.password
-      }) as AuthResponse
-
-      if (isAuthError(result)) {
-        const errorMessage = AUTH_ERROR_HANDLERS.signIn(result.error)
-        setError(errorMessage)
-      }
-    } catch (_err) {
-      setError('An unexpected error occurred. Please check your connection and try again.')
-    } finally {
-      setLoadingState('idle')
-    }
+    await signInWithEmail(data.email, data.password)
   }
 
+  /**
+   * Handles GitHub OAuth authentication.
+   */
   const handleGitHubSignIn = async () => {
-    setLoadingState('github')
-    setError(null)
-
-    try {
-      const result = await signIn.social({
-        provider: 'github'
-      }) as AuthResponse
-
-      if (isAuthError(result)) {
-        const errorMessage = AUTH_ERROR_HANDLERS.social(result.error)
-        setError(errorMessage)
-        setLoadingState('idle')
-      }
-    } catch (_err) {
-      setError('Unable to connect to GitHub. Please check your connection and try again.')
-      setLoadingState('idle')
-    }
+    await signInWithSocial('github')
   }
 
   return (
@@ -148,7 +126,7 @@ export function LoginForm({
                   onClick={handleGitHubSignIn}
                   disabled={isLoading}
                 >
-                  {loadingState === 'github' ? (
+                  {loadingState === 'social' ? (
                     <Spinner size="sm" className="mr-2" />
                   ) : (
                     <svg
@@ -168,7 +146,9 @@ export function LoginForm({
                       <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
                     </svg>
                   )}
-                  {loadingState === 'github' ? 'Connecting to GitHub...' : 'Login with GitHub'}
+                  {loadingState === 'social'
+                    ? 'Connecting to GitHub...'
+                    : 'Login with GitHub'}
                 </Button>
               </div>
               <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -188,12 +168,15 @@ export function LoginForm({
                       errors.email && touchedFields.email
                         ? 'border-red-500 focus:border-red-500'
                         : '',
-                      isLoading && 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-60'
+                      isLoading &&
+                        'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-60'
                     )}
                     {...register('email', validationRules.email)}
                   />
                   {errors.email && (
-                    <p className="text-sm text-red-600">{errors.email.message}</p>
+                    <p className="text-sm text-red-600">
+                      {errors.email.message}
+                    </p>
                   )}
                 </div>
                 <div className="grid gap-3">
@@ -214,20 +197,25 @@ export function LoginForm({
                       errors.password && touchedFields.password
                         ? 'border-red-500 focus:border-red-500'
                         : '',
-                      isLoading && 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-60'
+                      isLoading &&
+                        'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-60'
                     )}
                     {...register('password', validationRules.password)}
                   />
                   {errors.password && (
-                    <p className="text-sm text-red-600">{errors.password.message}</p>
+                    <p className="text-sm text-red-600">
+                      {errors.password.message}
+                    </p>
                   )}
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full" 
+                <Button
+                  type="submit"
+                  className="w-full"
                   disabled={isLoading || !isValid}
                 >
-                  {loadingState === 'email' && <Spinner size="sm" className="mr-2" />}
+                  {loadingState === 'email' && (
+                    <Spinner size="sm" className="mr-2" />
+                  )}
                   {loadingState === 'email' ? 'Signing in...' : 'Sign in'}
                 </Button>
               </div>

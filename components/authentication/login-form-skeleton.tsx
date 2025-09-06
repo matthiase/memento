@@ -6,19 +6,19 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { 
+import {
   Skeleton,
   InputSkeleton,
   ButtonSkeleton,
   TextSkeleton,
-  LabelSkeleton 
+  LabelSkeleton
 } from '@/components/ui/skeleton'
 
 interface LoginFormSkeletonProps extends React.ComponentProps<'div'> {}
 
-export function LoginFormSkeleton({ 
-  className, 
-  ...props 
+export function LoginFormSkeleton({
+  className,
+  ...props
 }: LoginFormSkeletonProps) {
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
