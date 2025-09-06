@@ -12,7 +12,7 @@ import {
   ButtonSkeleton,
   TextSkeleton,
   LabelSkeleton
-} from '@/components/ui/skeleton'
+} from '@/components/skeleton'
 
 interface LoginFormSkeletonProps extends React.ComponentProps<'div'> {}
 
