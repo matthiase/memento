@@ -2,7 +2,12 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { signIn } from '@/lib/auth-client'
+import { 
+  signIn,
+  type AuthResponse, 
+  isAuthError, 
+  AUTH_ERROR_HANDLERS 
+} from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -82,13 +87,14 @@ export function LoginForm({
       const result = await signIn.email({
         email: data.email,
         password: data.password
-      })
+      }) as AuthResponse
 
-      if (!result.data) {
-        setError(result.error?.message || 'Failed to sign in')
+      if (isAuthError(result)) {
+        const errorMessage = AUTH_ERROR_HANDLERS.signIn(result.error)
+        setError(errorMessage)
       }
     } catch (_err) {
-      setError('An unexpected error occurred')
+      setError('An unexpected error occurred. Please check your connection and try again.')
     } finally {
       setIsLoading(false)
     }
@@ -99,11 +105,17 @@ export function LoginForm({
     setError(null)
 
     try {
-      await signIn.social({
+      const result = await signIn.social({
         provider: 'github'
-      })
+      }) as AuthResponse
+
+      if (isAuthError(result)) {
+        const errorMessage = AUTH_ERROR_HANDLERS.social(result.error)
+        setError(errorMessage)
+        setIsLoading(false)
+      }
     } catch (_err) {
-      setError('Failed to sign in with GitHub')
+      setError('Unable to connect to GitHub. Please check your connection and try again.')
       setIsLoading(false)
     }
   }

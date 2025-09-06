@@ -6,7 +6,8 @@
       "Bash(curl:*)",
       "Bash(bun add:*)",
       "Bash(bun test:*)",
-      "Bash(bunx --bun list)"
+      "Bash(bunx --bun list)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

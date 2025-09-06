@@ -15,3 +15,17 @@ export const authClient = createAuthClient({
 })
 
 export const { signIn, signUp, signOut, useSession, getSession } = authClient
+
+// Re-export auth types for convenience
+export type { 
+  AuthResponse, 
+  AuthErrorResponse, 
+  AuthSuccessResponse,
+  BetterAuthErrorCode 
+} from './auth-types'
+export { 
+  isAuthError, 
+  isAuthSuccess, 
+  AUTH_ERROR_HANDLERS,
+  getUserFriendlyErrorMessage 
+} from './auth-types'
