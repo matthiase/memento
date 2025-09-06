@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeAll } from 'bun:test'
 import { setupTestDatabase } from '../test-setup'
+import { join } from 'node:path'
 
 // We'll test the auth configuration without actually initializing Better Auth with the database
 // since that causes the initialization error in test environment
@@ -99,6 +100,39 @@ describe('Better Auth Configuration', () => {
     expect(mockUser).toHaveProperty('id')
     expect(mockUser).toHaveProperty('email')
     expect(mockUser).toHaveProperty('emailVerified')
+  })
+
+  test('should have rate limiting configuration', () => {
+    // Test that the auth file contains rate limiting configuration
+    const authFilePath = join(process.cwd(), 'lib/auth.ts')
+    const authFileContent = require('node:fs').readFileSync(
+      authFilePath,
+      'utf8'
+    )
+
+    expect(authFileContent).toContain('rateLimit:')
+    expect(authFileContent).toContain('window:')
+    expect(authFileContent).toContain('max:')
+    expect(authFileContent).toContain('enabled: true')
+    expect(authFileContent).toContain('customRules:')
+  })
+
+  test('should have specific rate limits for auth endpoints', () => {
+    const authFilePath = join(process.cwd(), 'lib/auth.ts')
+    const authFileContent = require('node:fs').readFileSync(
+      authFilePath,
+      'utf8'
+    )
+
+    // Check for specific endpoint rate limits
+    expect(authFileContent).toContain('/sign-in/email')
+    expect(authFileContent).toContain('/sign-up/email')
+    expect(authFileContent).toContain('/reset-password')
+    expect(authFileContent).toContain('/social/github')
+
+    // Check for reasonable rate limit values
+    expect(authFileContent).toContain('max: 5') // sign-in limit
+    expect(authFileContent).toContain('max: 3') // sign-up and reset-password limits
   })
 })
 

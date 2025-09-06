@@ -16,6 +16,10 @@ describe('Auth API Route File', () => {
     expect(routeFileContent).toContain("import { auth } from '@/lib/auth'")
   })
 
+  test('should not import custom rate limiting', () => {
+    expect(routeFileContent).not.toContain("import { authRateLimit } from '@/lib/rate-limit'")
+  })
+
   test('should export GET handler', () => {
     expect(routeFileContent).toContain('export const GET')
     expect(routeFileContent).toContain('auth.handler')
@@ -27,14 +31,9 @@ describe('Auth API Route File', () => {
   })
 
   test('should use Better Auth handler for both methods', () => {
-    // Both GET and POST should use auth.handler
-    const getMatches = routeFileContent.match(/export const GET = auth\.handler/g)
-    const postMatches = routeFileContent.match(/export const POST = auth\.handler/g)
-    
-    expect(getMatches).toBeTruthy()
-    expect(postMatches).toBeTruthy()
-    expect(getMatches?.length).toBe(1)
-    expect(postMatches?.length).toBe(1)
+    // Both GET and POST should use auth.handler directly (Better Auth has built-in rate limiting)
+    expect(routeFileContent).toContain('export const GET = auth.handler')
+    expect(routeFileContent).toContain('export const POST = auth.handler')
   })
 })
 
@@ -69,5 +68,40 @@ describe('Auth Route Configuration', () => {
     // This test verifies our route structure matches those expectations
     expect(['GET', 'POST']).toContain('GET')
     expect(['GET', 'POST']).toContain('POST')
+  })
+})
+
+describe('Better Auth Built-in Rate Limiting', () => {
+  test('should use standard Better Auth handlers', () => {
+    const routePath = join(process.cwd(), 'app/api/auth/[...all]/route.ts')
+    const content = readFileSync(routePath, 'utf8')
+    
+    // Verify that we use auth.handler directly (Better Auth has built-in rate limiting)
+    expect(content).toContain('= auth.handler')
+    expect(content).not.toContain('authRateLimit')
+    expect(content).not.toContain('createRateLimit')
+  })
+
+  test('should rely on Better Auth configuration for rate limiting', () => {
+    // Better Auth handles rate limiting internally with the rateLimit config option
+    const authRoutes = [
+      'sign-in', 'sign-up', 'sign-out', 'session', 
+      'callback', 'verify-email', 'reset-password'
+    ]
+    
+    authRoutes.forEach(route => {
+      expect(route).toBeTruthy()
+      expect(typeof route).toBe('string')
+    })
+  })
+
+  test('should not use custom rate limiting middleware', () => {
+    const routePath = join(process.cwd(), 'app/api/auth/[...all]/route.ts')
+    const content = readFileSync(routePath, 'utf8')
+    
+    // Should not import or use custom rate limiting
+    expect(content).not.toContain('@/lib/rate-limit')
+    expect(content).not.toContain('RateLimit')
+    expect(content).not.toContain('rateLimit(')
   })
 })

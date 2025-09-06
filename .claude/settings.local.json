@@ -7,7 +7,8 @@
       "Bash(bun add:*)",
       "Bash(bun test:*)",
       "Bash(bunx --bun list)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:www.better-auth.com)"
     ],
     "deny": [],
     "ask": []

@@ -34,6 +34,29 @@ export const auth = betterAuth({
           }
         }
       : {},
+  rateLimit: {
+    window: 60, // 1 minute window
+    max: 10, // 10 requests per minute for general auth endpoints
+    enabled: true, // Enable in development as well for testing
+    customRules: {
+      '/sign-in/email': {
+        window: 60 * 15, // 15 minutes
+        max: 5 // 5 sign-in attempts per 15 minutes
+      },
+      '/sign-up/email': {
+        window: 60 * 5, // 5 minutes
+        max: 3 // 3 sign-up attempts per 5 minutes
+      },
+      '/reset-password': {
+        window: 60 * 60, // 1 hour
+        max: 3 // 3 password reset attempts per hour
+      },
+      '/social/github': {
+        window: 60 * 10, // 10 minutes
+        max: 5 // 5 social auth attempts per 10 minutes
+      }
+    }
+  },
   trustedOrigins,
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
