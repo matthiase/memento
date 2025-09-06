@@ -6,6 +6,10 @@ if (!process.env.BETTER_AUTH_URL || !process.env.BETTER_AUTH_SECRET) {
   )
 }
 
+if (!process.env.POSTGRES_URL) {
+  throw new Error('Missing required environment variable: POSTGRES_URL')
+}
+
 export const auth = betterAuth({
   database: {
     provider: 'postgresql',
@@ -23,9 +27,26 @@ export const auth = betterAuth({
           }
         }
       : {},
-  trustedOrigins: [process.env.BETTER_AUTH_URL],
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL,
+    ...(process.env.NODE_ENV === 'production' 
+      ? [process.env.NEXT_PUBLIC_APP_URL].filter(Boolean)
+      : ['http://localhost:3000'])
+  ].filter(Boolean),
   baseURL: process.env.BETTER_AUTH_URL,
-  secret: process.env.BETTER_AUTH_SECRET
+  secret: process.env.BETTER_AUTH_SECRET,
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5 // 5 minutes
+    }
+  },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: false
+    },
+    useSecureCookies: process.env.NODE_ENV === 'production'
+  }
 })
 
 export type Session = typeof auth.$Infer.Session
