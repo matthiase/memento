@@ -1,5 +1,6 @@
 import { GalleryVerticalEnd } from 'lucide-react'
 import { LoginForm } from '@/components/authentication/login-form'
+import { AuthErrorBoundary } from '@/components/authentication/error-boundary'
 
 export default function LoginPage() {
   return (
@@ -11,7 +12,9 @@ export default function LoginPage() {
           </div>
           Acme Inc.
         </a>
-        <LoginForm />
+        <AuthErrorBoundary>
+          <LoginForm />
+        </AuthErrorBoundary>
       </div>
     </div>
   )
