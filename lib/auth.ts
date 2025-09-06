@@ -10,6 +10,13 @@ if (!process.env.POSTGRES_URL) {
   throw new Error('Missing required environment variable: POSTGRES_URL')
 }
 
+const trustedOrigins = [
+  process.env.BETTER_AUTH_URL,
+  ...(process.env.NODE_ENV === 'production'
+    ? [process.env.NEXT_PUBLIC_APP_URL].filter(Boolean)
+    : ['http://localhost:3000'])
+].filter(Boolean) as string[]
+
 export const auth = betterAuth({
   database: {
     provider: 'postgresql',
@@ -27,12 +34,7 @@ export const auth = betterAuth({
           }
         }
       : {},
-  trustedOrigins: [
-    process.env.BETTER_AUTH_URL,
-    ...(process.env.NODE_ENV === 'production' 
-      ? [process.env.NEXT_PUBLIC_APP_URL].filter(Boolean)
-      : ['http://localhost:3000'])
-  ].filter(Boolean),
+  trustedOrigins,
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   session: {
