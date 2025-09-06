@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# Keep .env.test for tests but exclude real .env files
+!.env.test
 
 # vercel
 .vercel

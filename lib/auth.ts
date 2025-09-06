@@ -23,10 +23,10 @@ export const auth = betterAuth({
           }
         }
       : {},
-  trustedOrigins: ['http://localhost:3000'],
+  trustedOrigins: [process.env.BETTER_AUTH_URL],
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET
 })
 
 export type Session = typeof auth.$Infer.Session
-export type User = typeof auth.$Infer.Session.user
+export type User = (typeof auth.$Infer.Session)['user']

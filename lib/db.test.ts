@@ -1,31 +1,41 @@
-import { describe, test, expect, afterAll } from 'bun:test'
-import { sql, runMigrations } from '@/lib/db'
+import { describe, test, expect, beforeAll, afterAll } from 'bun:test'
+import { testSql, runTestMigrations } from '@/lib/test-db'
+import { setupTestDatabase } from '../test-setup'
 
 describe('Database Connection', () => {
-  afterAll(async () => {
-    await sql.end()
+  beforeAll(async () => {
+    await setupTestDatabase()
   })
 
-  test('should connect to database successfully', async () => {
-    const result = await sql`SELECT 1 as test`
+  afterAll(async () => {
+    const testConn = testSql()
+    await testConn.end()
+  })
+
+  test('should connect to test database successfully', async () => {
+    const testConn = testSql()
+    const result = await testConn`SELECT 1 as test`
     expect(result).toBeDefined()
     expect(result[0]).toEqual({ test: 1 })
   })
 
-  test('should have valid environment variable', () => {
+  test('should have valid test environment variable', () => {
     expect(process.env.POSTGRES_URL).toBeDefined()
     expect(process.env.POSTGRES_URL).toContain('postgres://')
+    expect(process.env.POSTGRES_URL).toContain('_test')
   })
 
-  test('should execute basic queries', async () => {
-    const result = await sql`SELECT current_database() as db_name`
+  test('should execute basic queries on test database', async () => {
+    const testConn = testSql()
+    const result = await testConn`SELECT current_database() as db_name`
     expect(result).toBeDefined()
     expect(result[0]).toHaveProperty('db_name')
-    expect(result[0].db_name).toBe('memento')
+    expect(result[0].db_name).toBe('memento_test')
   })
 
-  test('should verify Better Auth tables exist', async () => {
-    const tables = await sql`
+  test('should verify Better Auth tables exist in test database', async () => {
+    const testConn = testSql()
+    const tables = await testConn`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
@@ -40,8 +50,8 @@ describe('Database Connection', () => {
     expect(tableNames).toContain('verification')
   })
 
-  test('migration function should execute without errors', async () => {
+  test('test migration function should execute without errors', async () => {
     // This test ensures the migration can run multiple times safely
-    await expect(runMigrations()).resolves.toBeUndefined()
+    await expect(runTestMigrations()).resolves.toBeUndefined()
   })
 })
