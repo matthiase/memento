@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { signIn } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -14,30 +15,79 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+type FormData = {
+  email: string
+  password: string
+}
+
+// Validation rules
+const validationRules = {
+  email: {
+    required: 'Email is required',
+    pattern: {
+      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: 'Please enter a valid email address'
+    },
+    maxLength: {
+      value: 254,
+      message: 'Email address is too long'
+    }
+  },
+  password: {
+    required: 'Password is required',
+    minLength: {
+      value: 8,
+      message: 'Password must be at least 8 characters long'
+    },
+    maxLength: {
+      value: 128,
+      message: 'Password is too long'
+    },
+    validate: {
+      hasLowercase: (value: string) =>
+        /(?=.*[a-z])/.test(value) || 'Password must contain at least one lowercase letter',
+      hasUppercase: (value: string) =>
+        /(?=.*[A-Z])/.test(value) || 'Password must contain at least one uppercase letter',
+      hasNumber: (value: string) =>
+        /(?=.*\d)/.test(value) || 'Password must contain at least one number'
+    }
+  }
+}
+
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, touchedFields },
+  } = useForm<FormData>({
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  })
+
+  const onSubmit = async (data: FormData) => {
     setIsLoading(true)
     setError(null)
 
     try {
       const result = await signIn.email({
-        email,
-        password
+        email: data.email,
+        password: data.password
       })
 
       if (!result.data) {
         setError(result.error?.message || 'Failed to sign in')
       }
-    } catch (err) {
+    } catch (_err) {
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -52,7 +102,7 @@ export function LoginForm({
       await signIn.social({
         provider: 'github'
       })
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to sign in with GitHub')
       setIsLoading(false)
     }
@@ -71,7 +121,7 @@ export function LoginForm({
               {error}
             </div>
           )}
-          <form onSubmit={handleEmailSignIn}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
                 <Button
@@ -111,11 +161,17 @@ export function LoginForm({
                     id="email"
                     type="email"
                     placeholder="m@example.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
                     disabled={isLoading}
-                    required
+                    className={cn(
+                      errors.email && touchedFields.email
+                        ? 'border-red-500 focus:border-red-500'
+                        : ''
+                    )}
+                    {...register('email', validationRules.email)}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-red-600">{errors.email.message}</p>
+                  )}
                 </div>
                 <div className="grid gap-3">
                   <div className="flex items-center">
@@ -130,13 +186,23 @@ export function LoginForm({
                   <Input
                     id="password"
                     type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
                     disabled={isLoading}
-                    required
+                    className={cn(
+                      errors.password && touchedFields.password
+                        ? 'border-red-500 focus:border-red-500'
+                        : ''
+                    )}
+                    {...register('password', validationRules.password)}
                   />
+                  {errors.password && (
+                    <p className="text-sm text-red-600">{errors.password.message}</p>
+                  )}
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading || !isValid}
+                >
                   {isLoading ? 'Signing in...' : 'Login'}
                 </Button>
               </div>
