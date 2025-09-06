@@ -8,7 +8,12 @@
     "start": "next start",
     "check": "bun run biome check ./{app,components,lib}",
     "lint": "bun run biome lint ./{app,components,lib}",
-    "format": "bun run biome format ./{app,components,lib}"
+    "format": "bun run biome format ./{app,components,lib}",
+    "db:migrate": "bun run scripts/migrate.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:unit": "bun test lib/ app/",
+    "test:integration": "bun test __tests__/"
   },
   "dependencies": {
     "@radix-ui/react-icons": "^1.3.2",
@@ -21,6 +26,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.536.0",
     "next": "15.4.5",
+    "pg": "^8.16.3",
     "postgres": "^3.4.7",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -29,7 +35,9 @@
   "devDependencies": {
     "@biomejs/biome": "2.1.3",
     "@tailwindcss/postcss": "^4",
+    "@types/bun": "^1.2.21",
     "@types/node": "^20",
+    "@types/pg": "^8.15.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
